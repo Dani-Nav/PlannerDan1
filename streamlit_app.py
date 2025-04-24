@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_sortable import sortable
+from streamlit_dragdrop import dragdrop_area
 from datetime import datetime
 
 st.set_page_config(page_title="Planner IA", layout="wide")
@@ -16,14 +16,12 @@ if "kanban_data" not in st.session_state:
     st.session_state.kanban_data = init_columns()
 
 # dan: Renderização de cada card
-
 def render_card(card, idx, column_key):
     with st.expander(f"{card['title']}"):
         st.text_area("Comentário", value=card['comment'], key=f"comment_{column_key}_{idx}")
         st.date_input("Data de Conclusão", value=card['due_date'], key=f"due_{column_key}_{idx}")
 
 # dan: Adicionar novo card
-
 def add_card(column):
     title = st.text_input(f"Novo card para '{column}'", key=f"new_card_input_{column}")
     if st.button(f"Adicionar em {column}", key=f"add_card_btn_{column}") and title:
@@ -41,13 +39,10 @@ for idx, (col_name, cards) in enumerate(st.session_state.kanban_data.items()):
         st.markdown(f"### {col_name}")
         add_card(col_name)
 
-        moved = sortable(
-            [card['title'] for card in cards],
-            direction="vertical",
-            key=f"sortable_{col_name}"
-        )
+        card_titles = [card['title'] for card in cards]
+        new_order_titles = dragdrop_area(card_titles, key=f"dragdrop_{col_name}") or card_titles
 
-        new_order = [next(c for c in cards if c['title'] == title) for title in moved]
+        new_order = [next(c for c in cards if c['title'] == title) for title in new_order_titles]
         st.session_state.kanban_data[col_name] = new_order
 
         for i, card in enumerate(new_order):
