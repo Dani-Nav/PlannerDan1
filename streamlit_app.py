@@ -14,13 +14,6 @@ def init_columns():
 if "kanban_data" not in st.session_state:
     st.session_state.kanban_data = init_columns()
 
-if "new_card_inputs" not in st.session_state:
-    st.session_state.new_card_inputs = {
-        "A Fazer": "",
-        "Em Progresso": "",
-        "Concluído": ""
-    }
-
 # dan: Renderização de cada card com botões de movimentação
 def render_card(card, idx, column_key):
     with st.expander(f"{card['title']}"):
@@ -35,15 +28,21 @@ def render_card(card, idx, column_key):
                 move_card(column_key, idx, direction="right")
 
 # dan: Adicionar novo card
+
 def add_card(column):
-    title = st.text_input(f"Novo card para '{column}'", value=st.session_state.new_card_inputs[column], key=f"new_card_input_{column}")
+    key_input = f"new_card_input_{column}"
+    if key_input not in st.session_state:
+        st.session_state[key_input] = ""
+
+    title = st.text_input(f"Novo card para '{column}'", value=st.session_state[key_input], key=key_input)
+
     if st.button(f"Adicionar em {column}", key=f"add_card_btn_{column}") and title:
         st.session_state.kanban_data[column].append({
             "title": title,
             "comment": "",
             "due_date": datetime.today()
         })
-        st.session_state.new_card_inputs[column] = ""
+        st.session_state[key_input] = ""
 
 # dan: Mover card entre colunas
 def move_card(current_col, idx, direction):
