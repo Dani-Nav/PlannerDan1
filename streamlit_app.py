@@ -15,23 +15,34 @@ def init_columns():
 if "kanban_data" not in st.session_state:
     st.session_state.kanban_data = init_columns()
 
-# dan: Inicialização do cronômetro pomodoro
-if "pomodoro_start" not in st.session_state:
-    st.session_state.pomodoro_start = None
+if "pomodoro_running" not in st.session_state:
+    st.session_state.pomodoro_running = False
 
+if "pomodoro_start_time" not in st.session_state:
+    st.session_state.pomodoro_start_time = None
+
+# dan: Pomodoro Timer com atualização em tempo real
 st.markdown("## ⏱️ Pomodoro Timer")
 col1, col2 = st.columns([1, 4])
-if col1.button("▶️ Iniciar 20 minutos"):
-    st.session_state.pomodoro_start = time.time()
 
-if st.session_state.pomodoro_start:
-    elapsed = int(time.time() - st.session_state.pomodoro_start)
-    remaining = max(0, 20*60 - elapsed)
-    minutes = remaining // 60
-    seconds = remaining % 60
-    col2.markdown(f"### ⌛ Tempo restante: {minutes:02d}:{seconds:02d}")
-    if remaining == 0:
-        st.success("⏰ Tempo encerrado! Faça uma pausa!")
+if col1.button("▶️ Iniciar 20 minutos"):
+    st.session_state.pomodoro_start_time = time.time()
+    st.session_state.pomodoro_running = True
+
+if st.session_state.pomodoro_running:
+    timer_placeholder = col2.empty()
+    while True:
+        elapsed = int(time.time() - st.session_state.pomodoro_start_time)
+        remaining = max(0, 20*60 - elapsed)
+        minutes = remaining // 60
+        seconds = remaining % 60
+        timer_placeholder.markdown(f"### ⌛ Tempo restante: {minutes:02d}:{seconds:02d}")
+        if remaining == 0:
+            st.success("⏰ Tempo encerrado! Faça uma pausa!")
+            st.session_state.pomodoro_running = False
+            break
+        time.sleep(1)
+        st.experimental_rerun()
 
 # dan: Renderização de cada card com botões de movimentação
 def render_card(card, idx, column_key):
