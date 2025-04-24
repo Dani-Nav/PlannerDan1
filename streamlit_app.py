@@ -1,5 +1,6 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 
 st.set_page_config(page_title="Planner IA", layout="wide")
 
@@ -13,6 +14,24 @@ def init_columns():
 
 if "kanban_data" not in st.session_state:
     st.session_state.kanban_data = init_columns()
+
+# dan: Inicialização do cronômetro pomodoro
+if "pomodoro_start" not in st.session_state:
+    st.session_state.pomodoro_start = None
+
+st.markdown("## ⏱️ Pomodoro Timer")
+col1, col2 = st.columns([1, 4])
+if col1.button("▶️ Iniciar 20 minutos"):
+    st.session_state.pomodoro_start = time.time()
+
+if st.session_state.pomodoro_start:
+    elapsed = int(time.time() - st.session_state.pomodoro_start)
+    remaining = max(0, 20*60 - elapsed)
+    minutes = remaining // 60
+    seconds = remaining % 60
+    col2.markdown(f"### ⌛ Tempo restante: {minutes:02d}:{seconds:02d}")
+    if remaining == 0:
+        st.success("⏰ Tempo encerrado! Faça uma pausa!")
 
 # dan: Renderização de cada card com botões de movimentação
 def render_card(card, idx, column_key):
@@ -39,7 +58,6 @@ def add_card(column):
                 "comment": "",
                 "due_date": datetime.today()
             })
-            # dan: Não limpa o campo diretamente para evitar erro de API
 
 # dan: Mover card entre colunas
 def move_card(current_col, idx, direction):
