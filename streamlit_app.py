@@ -14,13 +14,6 @@ def init_columns():
 if "kanban_data" not in st.session_state:
     st.session_state.kanban_data = init_columns()
 
-if "new_card_inputs" not in st.session_state:
-    st.session_state.new_card_inputs = {
-        "A Fazer": "",
-        "Em Progresso": "",
-        "Concluído": ""
-    }
-
 # dan: Renderização de cada card com botões de movimentação
 def render_card(card, idx, column_key):
     with st.expander(f"{card['title']}"):
@@ -37,15 +30,16 @@ def render_card(card, idx, column_key):
 # dan: Adicionar novo card
 
 def add_card(column):
-    title = st.text_input(f"Novo card para '{column}'", key=f"new_card_input_{column}")
-
-    if st.button(f"Adicionar em {column}", key=f"add_card_btn_{column}") and title:
-        st.session_state.kanban_data[column].append({
-            "title": title,
-            "comment": "",
-            "due_date": datetime.today()
-        })
-        st.session_state[f"new_card_input_{column}"] = ""
+    with st.form(key=f"form_add_card_{column}"):
+        title = st.text_input(f"Novo card para '{column}'", key=f"new_card_input_{column}")
+        submitted = st.form_submit_button(f"Adicionar em {column}")
+        if submitted and title:
+            st.session_state.kanban_data[column].append({
+                "title": title,
+                "comment": "",
+                "due_date": datetime.today()
+            })
+            st.session_state[f"new_card_input_{column}"] = ""
 
 # dan: Mover card entre colunas
 def move_card(current_col, idx, direction):
@@ -65,6 +59,13 @@ for idx, (col_name, cards) in enumerate(st.session_state.kanban_data.items()):
         add_card(col_name)
         for i, card in enumerate(cards):
             render_card(card, i, col_name)
+
+# dan: Atualização do conteúdo dos cards após edição
+for col_name, cards in st.session_state.kanban_data.items():
+    for i, card in enumerate(cards):
+        card['comment'] = st.session_state.get(f"comment_{col_name}_{i}", card['comment'])
+        card['due_date'] = st.session_state.get(f"due_{col_name}_{i}", card['due_date'])
+
 
 # dan: Atualização do conteúdo dos cards após edição
 for col_name, cards in st.session_state.kanban_data.items():
