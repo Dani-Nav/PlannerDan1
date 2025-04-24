@@ -66,7 +66,6 @@ for col_name, cards in st.session_state.kanban_data.items():
         card['comment'] = st.session_state.get(f"comment_{col_name}_{i}", card['comment'])
         card['due_date'] = st.session_state.get(f"due_{col_name}_{i}", card['due_date'])
 
-
 # dan: Atualização do conteúdo dos cards após edição
 for col_name, cards in st.session_state.kanban_data.items():
     for i, card in enumerate(cards):
