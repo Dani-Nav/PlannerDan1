@@ -39,7 +39,7 @@ def add_card(column):
                 "comment": "",
                 "due_date": datetime.today()
             })
-            st.session_state[f"new_card_input_{column}"] = ""
+            # dan: Não limpa o campo diretamente para evitar erro de API
 
 # dan: Mover card entre colunas
 def move_card(current_col, idx, direction):
@@ -59,12 +59,6 @@ for idx, (col_name, cards) in enumerate(st.session_state.kanban_data.items()):
         add_card(col_name)
         for i, card in enumerate(cards):
             render_card(card, i, col_name)
-
-# dan: Atualização do conteúdo dos cards após edição
-for col_name, cards in st.session_state.kanban_data.items():
-    for i, card in enumerate(cards):
-        card['comment'] = st.session_state.get(f"comment_{col_name}_{i}", card['comment'])
-        card['due_date'] = st.session_state.get(f"due_{col_name}_{i}", card['due_date'])
 
 # dan: Atualização do conteúdo dos cards após edição
 for col_name, cards in st.session_state.kanban_data.items():
