@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 from datetime import datetime, timedelta
 import time
 
@@ -21,7 +22,11 @@ if "pomodoro_running" not in st.session_state:
 if "pomodoro_start_time" not in st.session_state:
     st.session_state.pomodoro_start_time = None
 
-# dan: Pomodoro Timer com atualização em tempo real
+# dan: Autorefresh se o pomodoro estiver rodando
+if st.session_state.pomodoro_running:
+    st_autorefresh(interval=1000, limit=None, key="pomodoro_autorefresh")
+
+# dan: Pomodoro Timer com atualização automática
 st.markdown("## ⏱️ Pomodoro Timer")
 col1, col2 = st.columns([1, 4])
 
@@ -30,19 +35,14 @@ if col1.button("▶️ Iniciar 20 minutos"):
     st.session_state.pomodoro_running = True
 
 if st.session_state.pomodoro_running:
-    timer_placeholder = col2.empty()
-    while True:
-        elapsed = int(time.time() - st.session_state.pomodoro_start_time)
-        remaining = max(0, 20*60 - elapsed)
-        minutes = remaining // 60
-        seconds = remaining % 60
-        timer_placeholder.markdown(f"### ⌛ Tempo restante: {minutes:02d}:{seconds:02d}")
-        if remaining == 0:
-            st.success("⏰ Tempo encerrado! Faça uma pausa!")
-            st.session_state.pomodoro_running = False
-            break
-        time.sleep(1)
-        st.experimental_rerun()
+    elapsed = int(time.time() - st.session_state.pomodoro_start_time)
+    remaining = max(0, 20 * 60 - elapsed)
+    minutes = remaining // 60
+    seconds = remaining % 60
+    col2.markdown(f"### ⌛ Tempo restante: {minutes:02d}:{seconds:02d}")
+    if remaining == 0:
+        st.success("⏰ Tempo encerrado! Faça uma pausa!")
+        st.session_state.pomodoro_running = False
 
 # dan: Renderização de cada card com botões de movimentação
 def render_card(card, idx, column_key):
@@ -58,7 +58,6 @@ def render_card(card, idx, column_key):
                 move_card(column_key, idx, direction="right")
 
 # dan: Adicionar novo card
-
 def add_card(column):
     with st.form(key=f"form_add_card_{column}"):
         title = st.text_input(f"Novo card para '{column}'", key=f"new_card_input_{column}")
