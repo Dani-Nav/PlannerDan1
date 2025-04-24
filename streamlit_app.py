@@ -17,14 +17,14 @@ if "kanban_data" not in st.session_state:
     st.session_state.kanban_data = init_columns()
 
 if "pomodoro_running" not in st.session_state:
-    st.session_state.pomodoro_running = False
+    st.session_state["pomodoro_running"] = False
 
 if "pomodoro_start_time" not in st.session_state:
-    st.session_state.pomodoro_start_time = None
+    st.session_state["pomodoro_start_time"] = None
 
-# dan: Autorefresh se o pomodoro estiver rodando
-if st.session_state.pomodoro_running:
-    st_autorefresh(interval=1000, limit=None, key="pomodoro_autorefresh")
+# dan: Autorefresh ativado quando o timer estiver rodando
+if st.session_state.get("pomodoro_running"):
+    st_autorefresh(interval=1000, limit=None, key="pomodoro_refresh")
 
 # dan: Pomodoro Timer com atualização automática
 st.markdown("## ⏱️ Pomodoro Timer")
@@ -42,7 +42,7 @@ if st.session_state.pomodoro_running:
     col2.markdown(f"### ⌛ Tempo restante: {minutes:02d}:{seconds:02d}")
     if remaining == 0:
         st.success("⏰ Tempo encerrado! Faça uma pausa!")
-        st.session_state.pomodoro_running = False
+        st.session_state["pomodoro_running"] = False
 
 # dan: Renderização de cada card com botões de movimentação
 def render_card(card, idx, column_key):
@@ -87,6 +87,12 @@ for idx, (col_name, cards) in enumerate(st.session_state.kanban_data.items()):
         add_card(col_name)
         for i, card in enumerate(cards):
             render_card(card, i, col_name)
+
+# dan: Atualização do conteúdo dos cards após edição
+for col_name, cards in st.session_state.kanban_data.items():
+    for i, card in enumerate(cards):
+        card['comment'] = st.session_state.get(f"comment_{col_name}_{i}", card['comment'])
+        card['due_date'] = st.session_state.get(f"due_{col_name}_{i}", card['due_date'])
 
 # dan: Atualização do conteúdo dos cards após edição
 for col_name, cards in st.session_state.kanban_data.items():
